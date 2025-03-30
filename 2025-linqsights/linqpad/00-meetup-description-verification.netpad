@@ -1,0 +1,41 @@
+cd95fef0-a29d-43e2-9eb7-cd4b6606c47b
+{"config":{"kind":"Program","targetFrameworkVersion":"DotNet9","optimizationLevel":"Debug","useAspNet":false,"namespaces":["System","System.Collections","System.Collections.Generic","System.Data","System.Diagnostics","System.IO","System.Linq","System.Linq.Expressions","System.Net.Http","System.Reflection","System.Text","System.Text.RegularExpressions","System.Threading","System.Threading.Tasks","System.Xml","System.Xml.Linq","System.Xml.XPath"],"references":[]},"dataConnection":null}
+#Code
+var data = new List<KbItem>();
+
+var meetup = new
+{
+    MaxSlides = 10
+};
+
+var timer = new MyTimer();
+
+var data2 =
+(from x in LinqKnowledgeBase.GetAllInsights()
+    where x.IsDeveloperRelevant && !x.IsWellKnown
+    orderby x.Fancyness descending
+    select new MeetupSlide(x.Headline, x.Content, x.DemoCode))
+    .Take(meetup.MaxSlides)
+    .TakeWhile(_ => timer.IsTimeOver())
+    .ToList();
+
+Console.WriteLine("end of file");
+
+
+
+public static class LinqKnowledgeBase
+{
+	public static List<KbItem> GetAllInsights()
+	{
+		return new List<KbItem>();
+	}
+}
+
+public class MyTimer()
+{
+	public bool IsTimeOver() => false;
+}
+
+public record KbItem(bool IsDeveloperRelevant, bool IsWellKnown, int Fancyness, string Headline, string Content, string DemoCode);
+public record MeetupSlide(string Headline, string Content, string DemoCode);
+// You can define other methods, fields, classes and namespaces here

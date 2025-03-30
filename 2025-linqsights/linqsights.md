@@ -16,6 +16,22 @@ by David Ritter
 
 ---
 
+# Query Syntax or Method Syntax?
+
+```csharp
+(from x in LinqKnowledgeBase.GetAllInsights()
+ where x.IsDeveloperRelevant && !x.IsWellKnown
+ order by x.Fancyness descending
+ select new MeetupSlide(x.Headline, x.Content, x.DemoCode))
+.Take(meetup.MaxSlides)
+.TakeWhile(_ => !timer.IsTimeOver())
+.ToList(); // or ToArray()?
+```
+
+<!-- Wer nimmt die "query syntax", wer "Method syntax"? -->
+
+---
+
 # Before LINQ
 
 * Queries against data with strings
@@ -31,77 +47,43 @@ by David Ritter
 
 ---
 
-# Query Syntax or Method Syntax?
+# Scope of This Presentation
+
+* :x: LINQ to Objects / SQL / Entities
+* :x: IQueryable
+* :x: Expression<>
+* :x: PLINQ
+* :white_check_mark: IEnumerable
+* :white_check_mark: item streaming
+* :white_check_mark: performance considerations
+* :white_check_mark: some extension methods
+
+---
+
+# Technical Basis
+
+![bg](img/vs-screenshot-enumerable.jpg)
+
+## <!-- fit--> `IEnumerable<T>`
+
+and
+
+## <!-- fit--> Extension methods
+
+---
+
+# What if I don't have `IEnumerable<T>` :scream:?
 
 ```csharp
-(from x in LinqKnowledgeBase.GetAllInsights()
- where x.IsDeveloperRelevant && !x.IsWellKnown
- order by x.Fancyness descending
- select new MeetupSlide(x.Headline, x.Content, x.DemoCode))
-.Take(meetup.MaxSlides)
-.TakeWhile(_ => !timer.IsTimeOver())
-.ToList(); // or ToArray()?
+var myString = "Hello Meetup people!";
+var matches = Regex.Matches(myString, "Meetup");
+matches.First(); // <-- compile error! 
 ```
 
-<!-- Wer nimmt die "language embedded syntax", wer "Method / Extension method syntax"? -->
+# Fixes
 
----
-
-## Themen Brainstorming
-
-LINQ-Style oder Extension-Method-Style
-Unterschiede bzw. Vorteile von LINQ-Style
-Grenzen von LINQ-Style
-
-- [ ] ToList oder ToArray
-- [ ] ToDictionary Überladungen
-- [ ] Enumerable Basics, yield
-- [ ] eine 10GB-Datei einlesen
-- [ ] eine Liste bearbeiten, während man sie durchläuft --> Exception!
-- [ ] .Any() oder .Count() > 0
-- [ ] .Count() oder .Count oder .Length?
-- [ ] Sinnloses zeugs, wie mehrere 
-- [ ] OrderBy, 
-- [ ] Distinct().Any()
-- [ ] .Distinct().Distinct()
-- [ ] Aufpassen bei Min()/Max()/Average()/Sum() => .DefaultIfEmpty()
-- [ ] .Where(x => x.HasValue) Nullable Reference Types Fix mit BzExt
-- [ ] Wie tun bei untypisierten Listen als Startwert? zB bei Regex.Matches()?
-- [ ] .Select() mit Indexüberladung
-- [ ] LINQ-Erweiterungs-NuGets
-- [ ] GroupBy mit anonymem Key-Objekt
-- [ ] .All() wenn die Liste leer ist
-- [ ] mehrere .Where() oder alles in einem
-- [ ] PredicateBuilder
-- [ ] Tipp: eigene Extensions schreiben, zB für SoftDelete
-- [ ] Query reuse? Specification-Pattern?
-- [ ] Enumerable.Repeat()
-- [ ] Enumerable.Empty<T>()
-- [ ] Enumerable.Range()
-- [ ] TryNonEnumeratedCount()
-- [ ] ExecutionTime
-- [ ] Big-O-Notation
-- [ ] Performance: list.Sum(x => x.SomeNumber) vs. foreach vs. for-Loop
-- [ ] Materialisierung von .GroupBy()
-
-etwas Abschweifend:
-- Performanceunterschied List oder Dictionary
-- EF-Zeugs, wie "nur das abfragen, was man auch braucht", kein Change Tracking
-- wie funktioniert EF Core intern?
-- Queryable, Expression<>
-
-
----
-
-# Abgrenzung
-
-~LINQ to Objects~
-~LINQ to SQL~
-~LINQ to Entities~
-~Expression<>~
-IEnumerable
-~IQueryable~
-~PLINQ~
+* `matches.OfType<Match>()`
+* `matches.Cast<Match>()`
 
 ---
 
@@ -119,109 +101,95 @@ IEnumerable
 
 ---
 
-# Basics - IEnumerable
+# I use Lists / `.ToList()` always - that's ok, right?
 
-> Wie viel Speicher brauchen wir, um ohne Enumerable eine 10GB-Datei einzulesen?
+Let's parse a CSV file
+- Warehouse and retail sales
+- 26 MB
+- ~300k Lines
+
+Question: How many items of type "WINE" are inside of this file?
+Question 2: What's the RAM usage for that application?
+
+<!-- start with File.ReadAllLines => +50MB memory, why? -->
+<!-- replace with File.ReadAllLines -->
+<!-- possibility to do "early exit" -->
+<!-- Split(char) is faster than Split(string) -->
+
+---
+
+# I use Lists / `.ToList()` always - that's ok, right?
+
+* depends on what you will do with your data
+* if you need to iterate over it multiple times
+	* do you always need ALL data?
+	* how FAST is your data source? (e.g. disk speed)
+	* do some benchmarking!
 
 ---
 
 # .ToList() or .ToArray()?
 
-```csharp
-public static List<TSource> ToList<TSource>(this IEnumerable<TSource> source)
-{
-	if (source == null)
-	{
-		ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-	}
+Which is faster?
 
-	return source is IIListProvider<TSource> listProvider ? listProvider.ToList() : new List<TSource>(source);
-}
-```
+`20-tolist-toarray.linq`
 
-```csharp
-public static TSource[] ToArray<TSource>(this IEnumerable<TSource> source)
-{
-	if (source == null)
-	{
-		ThrowHelper.ThrowArgumentNullException(ExceptionArgument.source);
-	}
+<br />
 
-	return source is IIListProvider<TSource> arrayProvider
-		? arrayProvider.ToArray()
-		: EnumerableHelpers.ToArray(source);
-}
-```
+* Check if that's really your performance bottleneck ;)
+* If your source is an `ICollection` already, it does not really make a big difference
+* Do you really need everything in memory?
+* depends on how you will modify the resulting collection
+
+<!-- dig into .ToList() and .ToArray() -->
+<!-- check out, why they are so fast -->
+<!-- I didn`t think that Lists are atually measurably faster... -->
 
 ---
 
-# .ToArray() --> EnumerableHelper.ToArray()
+# So should my methods accept `List<T>` to be performant?
 
-```csharp
-internal static T[] ToArray<T>(IEnumerable<T> source)
-{
-	Debug.Assert(source != null);
-
-	if (source is ICollection<T> collection)
-	{
-		int count = collection.Count;
-		if (count == 0)
-		{
-			return Array.Empty<T>();
-		}
-
-		var result = new T[count];
-		collection.CopyTo(result, arrayIndex: 0);
-		return result;
-	}
-
-	LargeArrayBuilder<T> builder = new();
-	builder.AddRange(source);
-	return builder.ToArray();
-}
-```
+TODO IEnumerable ICollection List/Array dependency diagram
 
 ---
 
-# .ToList() --> new List<T>(collection)
-
-```csharp
-public List(IEnumerable<T> collection)
-{
-	if (collection == null)
-		ThrowHelper.ThrowArgumentNullException(ExceptionArgument.collection);
-
-	if (collection is ICollection<T> c)
-	{
-		int count = c.Count;
-		if (count == 0)
-		{
-			_items = s_emptyArray;
-		}
-		else
-		{
-			_items = new T[count];
-			c.CopyTo(_items, 0);
-			_size = count;
-		}
-	}
-	else
-	{
-		_items = s_emptyArray;
-		using (IEnumerator<T> en = collection!.GetEnumerator())
-		{
-			while (en.MoveNext())
-			{
-				Add(en.Current);
-			}
-		}
-	}
-}
-```
+# Should I use `.Where(x => ...).Count()` or `.Count(x => ...)`?
 
 ---
 
-# Performanceprobleme
+# <!-- fit --> `.Count() > 0` :shit:
 
-allFiles.ToList().Count > 0
+Problems:
 
+* reading all lines / files / ...
+* just to count them
+* just to say "oh yeah, there is something!"
+
+---
+
+# <!-- fit --> `.Count() > 0` :shit:
+
+OK-ish :see_no_evil: (from performance perspective):
+* `.Count > 0`
+* `.Length > 0`
+
+Most expressive:
+* `.Any()`
+* `.HasContent()` => BlazingExtensions
+
+<!-- "Any()" uses Count internally or just pulls one item -->
+
+---
+
+# Checking for empty collections
+
+Difficult to read:
+* `myItems.Count() == 0`
+* `myItems.Count == 0`
+* `!myItems.Any()`
+* `!myItems?.Any() || false`
+
+Solution:
+* `myItems.LacksContent()` => BlazingExtensions
+
+---

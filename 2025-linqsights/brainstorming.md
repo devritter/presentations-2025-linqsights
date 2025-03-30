@@ -19,6 +19,7 @@ Grenzen von LINQ-Style
 - [ ] .Where(x => x.HasValue) Nullable Reference Types Fix mit BzExt
 - [ ] Wie tun bei untypisierten Listen als Startwert? zB bei Regex.Matches()?
 - [ ] .Select() mit Indexüberladung
+- [ ] .Where() mit Indexüberladung
 - [ ] LINQ-Erweiterungs-NuGets
 - [ ] GroupBy mit anonymem Key-Objekt
 - [ ] .All() wenn die Liste leer ist
