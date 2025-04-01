@@ -28,7 +28,7 @@ by David Ritter
 .ToList(); // or ToArray()?
 ```
 
-<!-- Wer nimmt die "query syntax", wer "Method syntax"? -->
+<!-- Question upfront: who uses "query syntax", who "Method syntax"? -->
 
 ---
 
@@ -40,10 +40,11 @@ by David Ritter
 # With LINQ
 
 * Query syntax integrated into the C# language
-* => Language INtegrated Query
+* => __L__-anguage __IN__-tegrated __Q__-uery
 * Same query and transformation pattern against differerent data sources
 * Type checking
 * Expression Trees
+* Lazy Evaluation
 
 ---
 
@@ -69,6 +70,47 @@ by David Ritter
 and
 
 ## <!-- fit--> Extension methods
+
+---
+
+# What is an `IEnumerable<T>`?
+
+* `List<T>`
+* `T[]`
+* `Dictionary<TKey, TValue>`
+* `HashSet<T>`
+* `string` => `IEnumerable<char>`
+
+---
+
+# Can I create `IEnumerable<T>`s myself?
+
+Of course!
+
+```csharp
+public static IEnumerable<string> MyItemFactory()
+{
+	yield return "I will";
+	yield return "always return";
+	yield return "the same starting text";
+	
+	if (DateTime.Now.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+	{
+		yield return "Did you know it's weekend?";
+	}
+	if (DateTime.Now.Year == 2012)
+	{
+		yield return "the end is near!!!";
+		yield break;
+	}
+
+	yield return "thanks for iterating!";
+}
+
+
+
+```
+
 
 ---
 
@@ -108,7 +150,7 @@ Let's parse a CSV file
 - 26 MB
 - ~300k Lines
 
-Question: How many items of type "WINE" are inside of this file?
+Question 1: How many items of type "WINE" are inside of this file?
 Question 2: What's the RAM usage for that application?
 
 <!-- start with File.ReadAllLines => +50MB memory, why? -->
@@ -147,13 +189,23 @@ Which is faster?
 
 ---
 
+![bg right fit](./img/icollection.drawio.svg)
+
 # So should my methods accept `List<T>` to be performant?
 
-TODO IEnumerable ICollection List/Array dependency diagram
+No, there is a better option!
+
+`ICollection<T>`
 
 ---
 
-# Should I use `.Where(x => ...).Count()` or `.Count(x => ...)`?
+# Don't know if `.Count()` could be expensive?
+e.g. for Pagination controls
+<br />
+
+* `30-count-if-cheap.linq`
+* use `TryGetNonEnumeratedCount(out int count)`
+* even works with some other LINQ methods in place, like `.Reverse()` or `.Take()`
 
 ---
 
@@ -162,7 +214,7 @@ TODO IEnumerable ICollection List/Array dependency diagram
 Problems:
 
 * reading all lines / files / ...
-* just to count them
+* to count every item ...
 * just to say "oh yeah, there is something!"
 
 ---
@@ -173,9 +225,9 @@ OK-ish :see_no_evil: (from performance perspective):
 * `.Count > 0`
 * `.Length > 0`
 
-Most expressive:
+But more expressive:
 * `.Any()`
-* `.HasContent()` => BlazingExtensions
+* `.HasContent()` => **BlazingExtensions**
 
 <!-- "Any()" uses Count internally or just pulls one item -->
 
@@ -187,9 +239,68 @@ Difficult to read:
 * `myItems.Count() == 0`
 * `myItems.Count == 0`
 * `!myItems.Any()`
-* `!myItems?.Any() || false`
+* `!myItems?.Any() ?? false`
 
 Solution:
-* `myItems.LacksContent()` => BlazingExtensions
+* `myItems.LacksContent()` => **BlazingExtensions**
 
 ---
+
+# Should I use `.Where(x => ...).Count()` or `.Count(x => ...)`?
+
+TODO
+
+---
+
+# Beware of empty lists!
+`40-min-max-avg-empty-list.linq`
+<br />
+
+Which problems can occur here?
+
+```csharp
+someNumbers.Min();
+someNumbers.Max();
+someNumbers.Average();
+someNumbers.Sum();
+```
+
+Solution:
+```csharp
+someNumbers = someNumbers.DefaultIfEmpty();
+someNumbers.Min();
+someNumbers.Max();
+someNumbers.Average();
+someNumbers.Sum();
+```
+
+<!-- no problem with `.Sum()` ;) -->
+
+---
+
+# Everything `All()`-right?
+`50-all.linq`
+<br />
+
+```csharp
+int[] someNumbers = [1,5,10];
+
+someNumbers.All(x => x > 0); 
+// returns true
+
+someNumbers.All(x => x > 10);
+// returns false
+
+someNumbers.Where(x => x > 100).All(x => x > 0);
+// returns ?
+```
+
+* => `.BzAll()` from **BlazingExtensions**
+
+---
+
+# Use `for`-loop features in LINQ
+
+Your tasks:
+1) only take every 10th element of a list
+2) select ViewModel objects and set their ListIndex property
