@@ -15,11 +15,11 @@ Grenzen von LINQ-Style
     - [ ] mehrere OrderBy()
     - [ ] Distinct().Any()
     - [ ] .Distinct().Distinct()
-- [ ] Aufpassen bei Min()/Max()/Average()/Sum() => .DefaultIfEmpty()
+- [x] Aufpassen bei Min()/Max()/Average()/Sum() => .DefaultIfEmpty()
 - [ ] .Where(x => x.HasValue) Nullable Reference Types Fix mit BzExt
 - [x] Wie tun bei untypisierten Listen als Startwert? zB bei Regex.Matches()?
-- [ ] .Select() mit Indexüberladung
-- [ ] .Where() mit Indexüberladung
+- [x] .Select() mit Indexüberladung
+- [x] .Where() mit Indexüberladung
 - [ ] LINQ-Erweiterungs-NuGets
 - [ ] GroupBy mit anonymem Key-Objekt
 - [x] .All() wenn die Liste leer ist

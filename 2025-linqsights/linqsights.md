@@ -109,10 +109,8 @@ public static IEnumerable<string> MyItemFactory()
 
 
 
+// extra lines to fix slide rendering glitch
 ```
-
-
----
 
 # What if I don't have `IEnumerable<T>` :scream:?
 
@@ -139,7 +137,7 @@ matches.First(); // <-- compile error!
 [LINQPad](https://www.linqpad.net)
 [NetPad](https://github.com/tareqimbasher/NetPad)
 
-> 00-meetup-description-verification.netpad
+<!-- _footer: 00-meetup-description-verification.netpad -->
 
 ---
 
@@ -174,8 +172,6 @@ Question 2: What's the RAM usage for that application?
 
 Which is faster?
 
-`20-tolist-toarray.linq`
-
 <br />
 
 * Check if that's really your performance bottleneck ;)
@@ -186,6 +182,7 @@ Which is faster?
 <!-- dig into .ToList() and .ToArray() -->
 <!-- check out, why they are so fast -->
 <!-- I didn`t think that Lists are atually measurably faster... -->
+<!-- _footer: 20-tolist-toarray.linq -->
 
 ---
 
@@ -203,9 +200,10 @@ No, there is a better option!
 e.g. for Pagination controls
 <br />
 
-* `30-count-if-cheap.linq`
 * use `TryGetNonEnumeratedCount(out int count)`
 * even works with some other LINQ methods in place, like `.Reverse()` or `.Take()`
+
+<!-- _footer: 30-count-if-cheap.linq -->
 
 ---
 
@@ -253,8 +251,6 @@ TODO
 ---
 
 # Beware of empty lists!
-`40-min-max-avg-empty-list.linq`
-<br />
 
 Which problems can occur here?
 
@@ -275,12 +271,12 @@ someNumbers.Sum();
 ```
 
 <!-- no problem with `.Sum()` ;) -->
+<!-- but beware of using `.Count()` ! -->
+<!-- _footer: 40-min-max-avg-empty-list.linq -->
 
 ---
 
 # Everything `All()`-right?
-`50-all.linq`
-<br />
 
 ```csharp
 int[] someNumbers = [1,5,10];
@@ -297,6 +293,8 @@ someNumbers.Where(x => x > 100).All(x => x > 0);
 
 * => `.BzAll()` from **BlazingExtensions**
 
+<!-- _footer: 50-all.linq -->
+
 ---
 
 # Use `for`-loop features in LINQ
@@ -304,3 +302,7 @@ someNumbers.Where(x => x > 100).All(x => x > 0);
 Your tasks:
 1) only take every 10th element of a list
 2) select ViewModel objects and set their ListIndex property
+
+<!-- names.Where((item, index) => index % 3 == 0).Dump(); -->
+<!-- names.Index().Dump().Where(x => x.Index % 3 == 0).Dump(); -->
+<!-- _footer: 60-linq-with-index.linq -->
