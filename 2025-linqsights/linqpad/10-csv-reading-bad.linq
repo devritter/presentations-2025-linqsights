@@ -1,16 +1,13 @@
 <Query Kind="Program">
-  <Reference>&lt;RuntimeDirectory&gt;\System.Data.dll</Reference>
-  <Reference>&lt;RuntimeDirectory&gt;\System.Data.Entity.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.Threading.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.Threading.Tasks.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.Threading.Tasks.Parallel.dll</Reference>
-  <Namespace>System.Data.Entity</Namespace>
-  <Namespace>System.Threading</Namespace>
   <Namespace>System.Threading.Tasks</Namespace>
 </Query>
 
 void Main()
 {
+	var sw = Stopwatch.StartNew();
 	PrintRam("start of program");
 	
 	var currentDirectory = Path.GetDirectoryName(Util.CurrentQueryPath);
@@ -18,7 +15,7 @@ void Main()
 	
 	PrintRam("before reading the file");
 	
-	var lines = File.ReadAllLines(path);
+	var lines = File.ReadAllLines(path).ToList();
 	
 	PrintRam("after reading the file");
 
@@ -35,6 +32,7 @@ void Main()
 	result.Dump("wine lines");
 
 	PrintRam("end of program");
+	sw.Elapsed.Dump("Stopwatch");
 }
 
 // Define other methods and classes here

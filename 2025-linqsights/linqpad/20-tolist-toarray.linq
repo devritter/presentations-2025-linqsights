@@ -1,11 +1,7 @@
 <Query Kind="Program">
-  <Reference>&lt;RuntimeDirectory&gt;\System.Data.dll</Reference>
-  <Reference>&lt;RuntimeDirectory&gt;\System.Data.Entity.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.Threading.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.Threading.Tasks.dll</Reference>
   <Reference>&lt;RuntimeDirectory&gt;\System.Threading.Tasks.Parallel.dll</Reference>
-  <Namespace>System.Data.Entity</Namespace>
-  <Namespace>System.Threading</Namespace>
   <Namespace>System.Threading.Tasks</Namespace>
 </Query>
 

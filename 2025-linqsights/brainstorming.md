@@ -5,8 +5,7 @@ Unterschiede bzw. Vorteile von LINQ-Style
 Grenzen von LINQ-Style
 
 - [x] ToList oder ToArray
-- [ ] ToDictionary Überladungen
-- [ ] Enumerable Basics, yield
+- [x] Enumerable Basics, yield
 - [x] eine größere Datei einlesen + RAM usage
 - [ ] eine Liste bearbeiten, während man sie durchläuft --> Exception!
 - [x] .Any() oder .Count() > 0

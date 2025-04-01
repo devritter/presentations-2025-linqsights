@@ -6,6 +6,7 @@ _paginate: skip
 backgroundImage: "linear-gradient(to top right,rgb(11, 24, 31),rgb(10, 93, 138))"
 ---
 
+![bg opacity](img/vs-screenshot-enumerable.jpg)
 # <!--fit-->LINQsights
 ## Deep-Dives, Performanceanalysen und Tipps gegen Stolperfallen
 
@@ -32,15 +33,19 @@ by David Ritter
 
 ---
 
+# <!-- fit --> First some basics!
+
+---
+
 # Before LINQ
 
-* Queries against data with strings
+* Nested loops
+* Queries against data sources with strings
 * Different APIs for different data sources
 
 # With LINQ
 
-* Query syntax integrated into the C# language
-* => __L__-anguage __IN__-tegrated __Q__-uery
+* Query syntax integrated into the C# language => __L__-anguage __IN__-tegrated __Q__-uery
 * Same query and transformation pattern against differerent data sources
 * Type checking
 * Expression Trees
@@ -54,27 +59,45 @@ by David Ritter
 * :x: IQueryable
 * :x: Expression<>
 * :x: PLINQ
-* :white_check_mark: IEnumerable
-* :white_check_mark: item streaming
+* :white_check_mark: IEnumerable and :white_check_mark: item streaming
 * :white_check_mark: performance considerations
-* :white_check_mark: some extension methods
+* :white_check_mark: pitfalls
+* :white_check_mark: tips and tricks
+* :white_check_mark: LINQPad
+
+---
+
+# LINQPad / NetPad (free)
+
+* Super tools for C# scripting!
+* no need for `.sln`, `.csproj`
+* easily connect to databases and query data the LINQ-way!
+* or just write some console apps :)
+* `.Dump()` takes everything and displays it nicely!
+* [LINQPad](https://www.linqpad.net)
+* [NetPad](https://github.com/tareqimbasher/NetPad)
+
+<!-- _footer: 00-meetup-description-verification.netpad -->
 
 ---
 
 # Technical Basis
 
-![bg](img/vs-screenshot-enumerable.jpg)
+* `IEnumerable<T>`
+* Extension methods
+* Object Initializers `new SomeClass { PropA = x.Name }`
+* Anonymouse Types `new { x.Name }`
+* Local variable type inference `var`
+* Lambda expressions `x => x.Size > 10`
+* Expression Trees (for `IQueryable<T>`)
 
-## <!-- fit--> `IEnumerable<T>`
-
-and
-
-## <!-- fit--> Extension methods
+<!-- most of it with the release of C# 3.0, .NET Framework 3.5, 2007 -->
 
 ---
 
 # What is an `IEnumerable<T>`?
 
+* An interface, implemented by:
 * `List<T>`
 * `T[]`
 * `Dictionary<TKey, TValue>`
@@ -112,6 +135,11 @@ public static IEnumerable<string> MyItemFactory()
 // extra lines to fix slide rendering glitch
 ```
 
+<!-- yield keyword is from C# 2.0 -->
+<!-- _footer: 05-yield.linq -->
+
+---
+
 # What if I don't have `IEnumerable<T>` :scream:?
 
 ```csharp
@@ -127,17 +155,8 @@ matches.First(); // <-- compile error!
 
 ---
 
-# Basics - LINQPad / NetPad
-
-* Super tools for C# scripting!
-* no need for `.sln`, `.csproj`
-* easily connect to databases and query data the LINQ-way!
-* or just write some console apps :)
-
-[LINQPad](https://www.linqpad.net)
-[NetPad](https://github.com/tareqimbasher/NetPad)
-
-<!-- _footer: 00-meetup-description-verification.netpad -->
+<!-- _backgroundImage: linear-gradient(to right, gray, gray) -->
+![bg fit](img/i-always-use-lists.jpg)
 
 ---
 
@@ -156,6 +175,8 @@ Question 2: What's the RAM usage for that application?
 <!-- possibility to do "early exit" -->
 <!-- Split(char) is faster than Split(string) -->
 
+<!-- _footer: 10-csv-reading-bad.linq -->
+
 ---
 
 # I use Lists / `.ToList()` always - that's ok, right?
@@ -168,6 +189,7 @@ Question 2: What's the RAM usage for that application?
 
 ---
 
+![bg left fit](img/tolist-toarray.jpeg)
 # .ToList() or .ToArray()?
 
 Which is faster?
@@ -181,14 +203,14 @@ Which is faster?
 
 <!-- dig into .ToList() and .ToArray() -->
 <!-- check out, why they are so fast -->
-<!-- I didn`t think that Lists are atually measurably faster... -->
-<!-- _footer: 20-tolist-toarray.linq -->
+<!-- question your performance measurements! twist execution order, check computer load... -->
+<!-- _footer: 20-tolist-toarray.linq, 21-tolist-toarray-wheretrue.linq -->
 
 ---
 
 ![bg right fit](./img/icollection.drawio.svg)
 
-# So should my methods accept `List<T>` to be performant?
+# So I make methods for `List<T>` AND `T[]` to be performant?
 
 No, there is a better option!
 
