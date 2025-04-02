@@ -22,7 +22,7 @@ by David Ritter
 ```csharp
 (from x in LinqKnowledgeBase.GetAllInsights()
  where x.IsDeveloperRelevant && !x.IsWellKnown
- order by x.Fancyness descending
+ orderby x.Fancyness descending
  select new MeetupSlide(x.Headline, x.Content, x.DemoCode))
 .Take(meetup.MaxSlides)
 .TakeWhile(_ => !timer.IsTimeOver())
@@ -81,7 +81,7 @@ by David Ritter
 
 ---
 
-# Technical Basis
+# Technical Basics
 
 * `IEnumerable<T>`
 * Extension methods
@@ -97,12 +97,15 @@ by David Ritter
 
 # What is an `IEnumerable<T>`?
 
-* An interface, implemented by:
-* `List<T>`
-* `T[]`
-* `Dictionary<TKey, TValue>`
-* `HashSet<T>`
-* `string` => `IEnumerable<char>`
+* An interface
+  * with one method: `IEnumerator<T> GetEnumerator()`
+    * with mainly `Current` property and `bool MoveNext()` method
+* implemented by:
+  * `List<T>`
+  * `T[]`
+  * `Dictionary<TKey, TValue>`
+  * `HashSet<T>`
+  * `string` => `IEnumerable<char>`
 
 ---
 
@@ -136,6 +139,7 @@ public static IEnumerable<string> MyItemFactory()
 ```
 
 <!-- yield keyword is from C# 2.0 -->
+<!-- add some "Thread.Sleep()" in between, then use .Take() at the caller -->
 <!-- _footer: 05-yield.linq -->
 
 ---
@@ -152,6 +156,9 @@ matches.First(); // <-- compile error!
 
 * `matches.OfType<Match>()`
 * `matches.Cast<Match>()`
+* `matches.OfType<object>()` / `matches.Cast<object>()`
+
+<!-- _footer: 07-oftype-cast.linq -->
 
 ---
 
@@ -241,7 +248,7 @@ Problems:
 
 # <!-- fit --> `.Count() > 0` :shit:
 
-OK-ish :see_no_evil: (from performance perspective):
+"Better" :see_no_evil: (from performance perspective):
 * `.Count > 0`
 * `.Length > 0`
 
@@ -259,16 +266,10 @@ Difficult to read:
 * `myItems.Count() == 0`
 * `myItems.Count == 0`
 * `!myItems.Any()`
-* `!myItems?.Any() ?? false`
+* `!myItems?.Any() ?? true`
 
 Solution:
 * `myItems.LacksContent()` => **BlazingExtensions**
-
----
-
-# Should I use `.Where(x => ...).Count()` or `.Count(x => ...)`?
-
-TODO
 
 ---
 
@@ -282,6 +283,14 @@ someNumbers.Max();
 someNumbers.Average();
 someNumbers.Sum();
 ```
+
+<!-- no problem with `.Sum()` ;) -->
+<!-- but beware of using `.Count()` ! -->
+<!-- _footer: 40-min-max-avg-empty-list.linq -->
+
+---
+
+# Beware of empty lists!
 
 Solution:
 ```csharp
@@ -316,6 +325,7 @@ someNumbers.Where(x => x > 100).All(x => x > 0);
 * => `.BzAll()` from **BlazingExtensions**
 
 <!-- _footer: 50-all.linq -->
+<!-- ask for expected results -->
 
 ---
 
@@ -325,6 +335,29 @@ Your tasks:
 1) only take every 10th element of a list
 2) select ViewModel objects and set their ListIndex property
 
+Solutions:
+1) `items.Where((item, index) => index % 3 == 0)`
+2) `items.Index().Where(x => new ViewModel { Index = x.Index, Name = x.Item.Name })`
 <!-- names.Where((item, index) => index % 3 == 0).Dump(); -->
 <!-- names.Index().Dump().Where(x => x.Index % 3 == 0).Dump(); -->
 <!-- _footer: 60-linq-with-index.linq -->
+
+--- 
+
+# Is LINQ slower than `for` or `foreach`?
+
+* it adds some overhead
+* but I would not call it "slow"
+* low-level operations (like `for`) are usually faster
+* but Assembler would be even faster, so do we use Assembler?
+* Check for the real bottleneck!
+
+<!-- _footer: 70-performance-linq-foreach-for -->
+
+---
+
+# Should I use `.Where(x => ...).Count()` or `.Count(x => ...)`?
+
+TODO
+
+---

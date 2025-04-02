@@ -6,8 +6,6 @@
 
 void Main()
 {
-	var data = new List<KbItem>();
-
 	var meetup = new
 	{
 		MaxSlides = 10
@@ -21,15 +19,18 @@ void Main()
 	 orderby x.Fancyness descending
 	 select new MeetupSlide(x.Headline, x.Content, x.DemoCode))
 	 .Take(meetup.MaxSlides)
-	 .TakeWhile(_ => timer.IsTimeOver())
+	 .TakeWhile(_ => !timer.IsTimeOver())
 	 .ToList();
+	 
+	 data2.Dump();
 }
 
 public static class LinqKnowledgeBase
 {
-	public static List<KbItem> GetAllInsights()
+	public static IEnumerable<KbItem> GetAllInsights()
 	{
-		return new List<KbItem>();
+		yield return new KbItem(true, false, 100, "LINQPad", "LINQPad is great", "you see it now");
+		yield return new KbItem(true, false, 80, "NetPad", "Also looks quite good", "");
 	}
 }
 

@@ -10,7 +10,7 @@ void Main()
 	
 	someNumbers.All(x => x > 0).Dump("expect true");
 	someNumbers.All(x => x > 10).Dump("expect false");
-	//someNumbers.Where(x => x > 100).All(x => x > 0).Dump("expect ???");
+	//someNumbers.Where(x => x > 100).Dump("items left").All(x => x > 0).Dump("expect ???");
 	
 	
 	
@@ -22,6 +22,7 @@ void Main()
 	var kids = new List<Kid>();
 	var allKidsInBed = kids.All(x => x.IsInBed);
 	//allKidsInBed.Dump("expect ???");
+	//kids.BzAll(x => x.IsInBed).Dump("bzall");
 }
 
 public record Kid(string Name, bool IsInBed);
