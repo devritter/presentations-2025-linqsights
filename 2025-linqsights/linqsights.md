@@ -194,14 +194,14 @@ Question 2: What's the RAM usage for that application?
 	* how FAST is your data source? (e.g. disk speed)
 	* do some benchmarking!
 
+<!-- when you only need some preview data, use .Take() upfront! -->
+
 ---
 
 ![bg left fit](img/tolist-toarray.jpeg)
 # .ToList() or .ToArray()?
 
 Which is faster?
-
-<br />
 
 * Check if that's really your performance bottleneck ;)
 * If your source is an `ICollection` already, it does not really make a big difference
@@ -222,6 +222,21 @@ Which is faster?
 No, there is a better option!
 
 `ICollection<T>`
+
+---
+
+# <!-- fit --> Materialize `.GroupBy()`
+
+* Materialization = pull the data into memory
+* like `.ToList()` and `.ToArray()`
+* `.GroupBy()` still has deferred / lazy execution
+* 3 options to materialize it:
+  * `.ToList()` => `List<IGrouping<TKey, TValue>>`
+  * `.ToDictionary()` => `Dictionary<TKey, List<TValue>>`
+  * `.ToLookup()` => `ILookup<TKey, TValue>`
+    * readonly!
+
+<!-- _footer: 25-materialize-groupby.linq -->
 
 ---
 
@@ -249,8 +264,8 @@ Problems:
 # <!-- fit --> `.Count() > 0` :shit:
 
 "Better" :see_no_evil: (from performance perspective):
-* `.Count > 0`
-* `.Length > 0`
+* `.Count > 0` if you have an `ICollection<T>` / `List<T>`
+* `.Length > 0` if you have an Array
 
 But more expressive:
 * `.Any()`
@@ -260,7 +275,15 @@ But more expressive:
 
 ---
 
-# Checking for empty collections
+# `.Count()` / `.Any()` more readings
+- [CA1860: Avoid using 'Enumerable.Any()' extension method](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1860)
+- [CA1827: Do not use Count()/LongCount() when Any() can be used](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1827)
+- [CA1829: Use Length/Count property instead of Enumerable.Count method](https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/quality-rules/ca1829)
+* => make a team decision
+
+---
+
+# <!-- fit --> Checking for empty collections
 
 Difficult to read:
 * `myItems.Count() == 0`
@@ -273,7 +296,7 @@ Solution:
 
 ---
 
-# Beware of empty lists!
+# <!-- fit --> Beware of empty lists!
 
 Which problems can occur here?
 
@@ -290,7 +313,7 @@ someNumbers.Sum();
 
 ---
 
-# Beware of empty lists!
+# <!-- fit --> Beware of empty lists!
 
 Solution:
 ```csharp
@@ -307,7 +330,20 @@ someNumbers.Sum();
 
 ---
 
-# Everything `All()`-right?
+# <!-- fit --> Tipps for `null` items
+
+* some methods like `.Sum()`, `.Min()`, `.Max()` just ignore `null` numbers
+* think about what you want when using `.Count()`!
+* to unwrap nullables use `.WhereNotNull()` from **BlazingExtensions**
+
+<!-- when all items are null, we also get null back! (from Min/Max/Average) -->
+<!-- Sum() always returns the number, even the signature tells differently... -->
+<!-- What happens with an empty list? ==> no exceptions with int? -->
+<!-- _footer: 45-null-items.linq -->
+
+---
+
+# <!-- fit --> Everything `All()`-right?
 
 ```csharp
 int[] someNumbers = [1,5,10];
@@ -318,7 +354,7 @@ someNumbers.All(x => x > 0);
 someNumbers.All(x => x > 10);
 // returns false
 
-someNumbers.Where(x => x > 100).All(x => x > 0);
+someNumbers.Where(x => x > 10).All(x => x > 10);
 // returns ?
 ```
 
@@ -329,7 +365,7 @@ someNumbers.Where(x => x > 100).All(x => x > 0);
 
 ---
 
-# Use `for`-loop features in LINQ
+# <!-- fit --> Use `for`-loop features in LINQ
 
 Your tasks:
 1) only take every 10th element of a list
@@ -344,20 +380,95 @@ Solutions:
 
 --- 
 
-# Is LINQ slower than `for` or `foreach`?
+# <!-- fit --> Is LINQ slower than `for` or `foreach`?
 
 * it adds some overhead
 * but I would not call it "slow"
 * low-level operations (like `for`) are usually faster
-* but Assembler would be even faster, so do we use Assembler?
-* Check for the real bottleneck!
+* but Assembler would be even faster, so why not use Assembler?
+* => Check for the real bottleneck!
 
+<!-- remove .ToList() from first line... -->
 <!-- _footer: 70-performance-linq-foreach-for -->
+
+---
+
+# <!-- fit --> One complexe `.Where()`
+# <!-- fit --> or many small `.Where()`?
+
+* the LINQ overhead adds up
+* Behavior with `IQueryable<T>` could be different
+* => prefer readable code!
+* => make a team decision!
+* => Check for the real bottleneck!
+
+<!-- technically the WhereIterator combines the predicates. But still they are invoking delegates -->
+<!-- _footer: 80-one-many-where.linq -->
+
+---
+
+# <!-- fit --> Skip `.Where()` when possible
+* the predicate function needs to be invoked for every item
+* if some conditions are the same for the whole iteration, we can get rid of the `WhereIterator`
+* but only measurable for huge lists!
+* => prefer readable code!
+
+<!-- _footer: 85-skip-where.linq, 86-skip-where-solution.linq -->
 
 ---
 
 # Should I use `.Where(x => ...).Count()` or `.Count(x => ...)`?
 
-TODO
+* Regarding the small LINQ overhead `Count(x => ...)` should be faster
+* When using `IQueryable<T>` you will have the same resulting SQL
+* => make a team decision!
+
+[GitHub Issue](https://github.com/dotnet/runtime/issues/64728)
 
 ---
+
+# <!-- fit --> List flattening with `.SelectMany()`
+
+```csharp
+var peopleWithPets = new[] {
+    new { Name = "Anna",   Pets = new[] { "Dog", "Cat", "Parrot" } },
+    new { Name = "Ben",    Pets = new[] { "Fish", "Hamster", "Snake" } }
+};
+
+var allPets = peopleWithPets.SelectMany(p => p.Pets);
+
+foreach (var pet in allPets)
+{
+    Console.WriteLine(pet);
+}
+```
+
+<!-- _footer: 90-list-flattening.linq -->
+
+---
+
+# <!-- fit --> Utility Methods
+
+for playing around or unit tests
+
+```csharp
+// empty collections
+Enumerable.Empty<T>();
+Array.Empty<T>();
+
+// create lots of numbers
+Enumerable.Range(1_000_000, 2_000_000);
+
+// create a huge list for processing
+Enumerable.Repeat(new ComplexObject(), 1_000_000);)
+```
+
+---
+
+# <!-- fit --> Thanks for listening!
+
+Further links:
+- BlazingExtensions on [GitHub](https://github.com/devritter/BlazingExtensions) and [NuGet](https://www.nuget.org/packages/BlazingDev.BlazingExtensions/)
+- [BenchmarkDotNet](https://github.com/dotnet/BenchmarkDotNet)
+- [LINQPad](https://www.linqpad.net/)
+- [NetPad](https://github.com/tareqimbasher/NetPad)
