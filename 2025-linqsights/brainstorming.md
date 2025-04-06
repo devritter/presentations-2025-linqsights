@@ -9,22 +9,19 @@ Grenzen von LINQ-Style
 - [x] eine größere Datei einlesen + RAM usage
 - [x] .Any() oder .Count() > 0
 - [x] .Count() oder .Count oder .Length?
-- [ ] Sinnloses zeugs, wie
-    - [ ] mehrere OrderBy()
-    - [ ] Distinct().Any()
-    - [ ] .Distinct().Distinct()
+- [x] Sinnloses zeugs, wie
 - [x] Aufpassen bei Min()/Max()/Average()/Sum() => .DefaultIfEmpty()
 - [x] .Where(x => x.HasValue) Nullable Reference Types Fix mit BzExt
 - [x] Wie tun bei untypisierten Listen als Startwert? zB bei Regex.Matches()?
 - [x] .Select() mit Indexüberladung
 - [x] .Where() mit Indexüberladung
-- [ ] LINQ-Erweiterungs-NuGets
+- [x] LINQ-Erweiterungs-NuGets
 - [ ] GroupBy mit anonymem Key-Objekt
 - [x] .All() wenn die Liste leer ist
 - [x] mehrere .Where() oder alles in einem, was ist schneller?
 - [ ] PredicateBuilder
-- [ ] Tipp: eigene Extensions schreiben, zB für SoftDelete
-- [ ] Query reuse? Specification-Pattern?
+- [x] Tipp: eigene Extensions schreiben, zB für SoftDelete
+- [x] Query reuse? Specification-Pattern?
 - [x] Enumerable.Repeat()
 - [x] Enumerable.Empty<T>()
 - [x] Enumerable.Range()

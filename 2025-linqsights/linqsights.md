@@ -73,6 +73,7 @@ by David Ritter
 * no need for `.sln`, `.csproj`
 * easily connect to databases and query data the LINQ-way!
 * or just write some console apps :)
+* call methods from your assemblys
 * `.Dump()` takes everything and displays it nicely!
 * [LINQPad](https://www.linqpad.net)
 * [NetPad](https://github.com/tareqimbasher/NetPad)
@@ -242,7 +243,6 @@ No, there is a better option!
 
 # Don't know if `.Count()` could be expensive?
 e.g. for Pagination controls
-<br />
 
 * use `TryGetNonEnumeratedCount(out int count)`
 * even works with some other LINQ methods in place, like `.Reverse()` or `.Take()`
@@ -308,7 +308,6 @@ someNumbers.Sum();
 ```
 
 <!-- no problem with `.Sum()` ;) -->
-<!-- but beware of using `.Count()` ! -->
 <!-- _footer: 40-min-max-avg-empty-list.linq -->
 
 ---
@@ -410,7 +409,7 @@ Solutions:
 # <!-- fit --> Skip `.Where()` when possible
 * the predicate function needs to be invoked for every item
 * if some conditions are the same for the whole iteration, we can get rid of the `WhereIterator`
-* but only measurable for huge lists!
+* but only measurable for large lists!
 * => prefer readable code!
 
 <!-- _footer: 85-skip-where.linq, 86-skip-where-solution.linq -->
@@ -425,14 +424,33 @@ Solutions:
 
 [GitHub Issue](https://github.com/dotnet/runtime/issues/64728)
 
+--- 
+
+# <!-- fit --> Watch out for silly calls!
+
+* `.Where(x => x.SomeFlag).Where(x => x.SomeFlag)`
+* `.Distinct().Distinct()`
+  * Distinct is quite expensive
+* `Distinct().Count() > 0`
+  * Why clean up list just to check if there is something?
+* `.OrderBy(x => x.Name).ToHashSet()`
+  * A `HashSet<T>` does not care about ordering
+* `.OrderBy(x => x.Name).Count()`
+  * why sort the work before counting it?
+
+<!-- .Order() and .Skip() before .Count() is just ignored by the framework, cool! -->
+<!-- but .Order() adds up when using ToList() -->
+<!-- .Where(x => true) disables short-circuits -->
+<!-- _footer: 87-silly-calls.linq -->
+
 ---
 
 # <!-- fit --> List flattening with `.SelectMany()`
 
 ```csharp
 var peopleWithPets = new[] {
-    new { Name = "Anna",   Pets = new[] { "Dog", "Cat", "Parrot" } },
-    new { Name = "Ben",    Pets = new[] { "Fish", "Hamster", "Snake" } }
+    new { Name = "Anna", Pets = new[] { "Dog", "Cat", "Parrot" } },
+    new { Name = "Ben",  Pets = new[] { "Fish", "Hamster", "Snake" } }
 };
 
 var allPets = peopleWithPets.SelectMany(p => p.Pets);
@@ -444,6 +462,75 @@ foreach (var pet in allPets)
 ```
 
 <!-- _footer: 90-list-flattening.linq -->
+
+---
+
+# <!-- fit --> Write your own extension methods!
+DRY => Don't Repeat Yourself!
+
+```csharp
+public interface ISoftDelete
+{
+    bool IsDeleted { get; set; }	
+}
+
+public static class MyExtensions
+{
+    public static IEnumerable<T> WhereNotDeleted<T>(this IEnumerable<T> source) 
+        where T : ISoftDelete
+    {
+        return source.Where(x => x.IsDeleted == false)
+    }
+}
+```
+
+<!-- it is super easy and helps with readability a lot! -->
+<!-- also think about writing them specifically for unit tests! -->
+
+---
+
+# <!-- fit --> Write your own extension methods!
+
+* `.WhereActive()` with `IIsActive` items
+* `.WhereNotExpired()`
+* `.ApplyDefaultSorting()`
+* `.ApplySearchFilter(ProductSearchFilter filter)`
+* `.Paginate(PaginationQuery query)`
+* `.Paginate(source, pageNumber, pageSize)`
+* `.GroupByCategory()`
+* `.CountNulls()`
+* `.Shuffle()`
+
+---
+
+# <!-- fit --> How to reuse LINQ parameters
+
+```csharp
+public static class MyFilters
+{
+    public static Func<User, bool> IsActive = u => u.IsActive;
+    public static Func<User, bool> IsAdult = u => u.Age >= 18;
+    public static Func<User, bool> IsActiveAndAdult = u => IsActive(u) && IsAdult(u);
+}
+
+var result1 = users.Where(MyFilters.IsActive).Where(MyFilters.IsAdult);
+var result2 = users.Where(MyFilters.IsActiveAndAdult);
+```
+
+<!-- when working with IQueryables, you have to also define the Expression-version of it! -->
+
+---
+
+# <!-- fit --> How to reuse LINQ parameters
+
+Further ideas:
+
+* `UserSorter`
+* `ProductByCategoryThenNameSorter`
+* `UserComparer`
+* `ProductCountSelector`
+* `TotalPriceSelector`
+* `AnyActiveNotificationSelector`
 
 ---
 
@@ -469,6 +556,9 @@ Enumerable.Repeat(new ComplexObject(), 1_000_000);)
 
 Further links:
 - BlazingExtensions on [GitHub](https://github.com/devritter/BlazingExtensions) and [NuGet](https://www.nuget.org/packages/BlazingDev.BlazingExtensions/)
+- [MoreLINQ](https://morelinq.github.io/)
+- [Hyperlinq](https://github.com/NetFabric/NetFabric.Hyperlinq)
+- [StructLinq](https://github.com/reegeek/StructLinq)
 - [BenchmarkDotNet](https://github.com/dotnet/BenchmarkDotNet)
 - [LINQPad](https://www.linqpad.net/)
 - [NetPad](https://github.com/tareqimbasher/NetPad)
