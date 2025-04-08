@@ -8,7 +8,7 @@ backgroundImage: "linear-gradient(to top right,rgb(11, 24, 31),rgb(10, 93, 138))
 
 ![bg opacity](img/vs-screenshot-enumerable.jpg)
 # <!--fit-->LINQsights
-## Deep-Dives, Performanceanalysen und Tipps gegen Stolperfallen
+## Deep-dives, performance analysis and tips against pitfalls
 
 <br/>
 
@@ -55,14 +55,14 @@ by David Ritter
 
 # Scope of This Presentation
 
-* :x: LINQ to Objects / SQL / Entities
-* :x: IQueryable
-* :x: Expression<>
-* :x: PLINQ
 * :white_check_mark: IEnumerable and :white_check_mark: item streaming
 * :white_check_mark: performance considerations
 * :white_check_mark: pitfalls
 * :white_check_mark: tips and tricks
+* :x: LINQ to Objects / SQL / Entities
+* :x: IQueryable
+* :x: Expression<>
+* :x: PLINQ
 * :white_check_mark: LINQPad
 
 ---
@@ -420,9 +420,14 @@ Solutions:
 
 * Regarding the small LINQ overhead `Count(x => ...)` should be faster
 * When using `IQueryable<T>` you will have the same resulting SQL
+* [GitHub Issue](https://github.com/dotnet/runtime/issues/64728)
+* ```csharp
+  | Method         |     Mean |     Error |    StdDev |   Gen0 | Allocated |
+  | -------------- | -------: | --------: | --------: | -----: | --------: |
+  | LinqWhereCount | 1.618 us | 0.0319 us | 0.0391 us | 0.0229 |      72 B |
+  | LinqCount      | 2.238 us | 0.0257 us | 0.0228 us | 0.0114 |      40 B |
+  ```
 * => make a team decision!
-
-[GitHub Issue](https://github.com/dotnet/runtime/issues/64728)
 
 --- 
 
